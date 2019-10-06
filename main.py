@@ -9,20 +9,27 @@ class attendant():
                           endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
         self.data = self.loadTable()
 
+        # the length of what a valid uid will be
+        self.validLength = 10
+        self.inOut = ['IN', 'OUT']
+
     # make the browser add data to the db
     def add(self, item):
         self.data.put_item(Item = item)
 
-    '''
-    will eventually turn this into a ddb query but this is just a
-    hotfix for the moment
-    '''
-    def checkExists(self, userID):
-        retrievedData = self.data.query(KeyConditionExpression=Key('participantID').eq(userID))
+    # queries ddb to see if the userID exists
+    def checkExists(self, uid):
+        retrievedData = self.data.query(KeyConditionExpression=Key('participantID').eq(uid))
         if retrievedData['Count'] == 0:
+            return None, False
+        else:
+            return retrievedData, True
+
+    # verify the length of the entered uid
+    def verifyUID(self, uid):
+        if len(str(uid)) != self.validLength:
             return False
         else:
-            print(retrievedData['Items'][0]['name'])
             return True
 
     # load the table in init and every time an action happens at the table
@@ -30,18 +37,36 @@ class attendant():
         data = self.ddb.Table('practiceAttendance')
         return data
 
-
 if __name__ == '__main__':
+
+    # make an attendant instance
     a = attendant()
+
+    # continuously check for checkins / outs
     while True:
-        userID = int(input('USER ID:\t\t'))
+        uid = input('USER ID:\t\t')
 
         a.loadTable()
 
-        if a.checkExists(userID):
-            print("Yep they exist!\n")
-        else:
-            userName = input("USER NAME:\t\t")
-            newUser = {'participantID' : userID, 'name' : userName}
-            a.add(newUser)
-            print('\n')
+        # if the uid is valid length
+        if a.verifyUID(uid):
+
+            # change uid to int after length is verified
+            uid = int(uid)
+
+            # try to retrieve data from ddb
+            retrievedData, exists = a.checkExists(uid)
+
+            # if the user exists
+            if exists:
+                retrievedData['Items'][0]['status'] *= -1
+                print(retrievedData['Items'][0]['status'])
+
+                a.add(retrievedData['Items'][0])
+
+            # if no uid associated yet
+            else:
+                userName = input("USER NAME:\t\t")
+                newUser = {'participantID' : uid, 'name' : userName, 'status' : 1}
+                a.add(newUser)
+                print('\n')
