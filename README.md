@@ -6,3 +6,6 @@ creating a check in system for CUhackitEvents
 - [ ] Search DB for UID
 - [ ] Modify the tech that the participant has checked out
 - [ ] Identify additional participant information that we want to track
+
+## Issues
+- [ ] Sometimes the last id number is omitted upon scanning
