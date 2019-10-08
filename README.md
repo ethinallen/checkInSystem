@@ -3,6 +3,8 @@ creating a check in system for CUhackitEvents
 
 ## TODO
 - [x] Add entries to DB
+- [ ] Ability to change a name
+- [ ] Ability to print who is in and who is out
 - [x] Search DB for UID
 - [ ] Modify the tech that the participant has checked out
   - [ ] add feature to select `add tech`
