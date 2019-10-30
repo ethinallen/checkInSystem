@@ -45,15 +45,18 @@ class attendant():
                                 }
 
     # make the browser add data to the db
-    def add(self, item):
+    def add(self, item, screen):
         self.data.put_item(Item = item)
+        a.greet(item['status'], item['name'], surf)
 
-    def changeName(self):
+    # change the name of the user
+    # accepts screen argument because that is
+    def changeName(self, screen):
         # prompt the attendant to enter the revised name
         a.retrievedData['name'] = input('NEW USER NAME:\t')
 
         # add the new name back into the db
-        a.add(a.retrievedData)
+        a.add(a.retrievedData, screen)
 
         return 1
 
@@ -95,7 +98,7 @@ class attendant():
             self.add(self.retrievedData)
 
         else:
-            display_box(surf, (screen.get_width() / 10), (screen.get_height() / 3 * 2), red, black, "USER ALREADY HAS THE FOLLOWING TECH CHECKED OUT:\t{}".format(currentTech))
+            display_box(surf, (screen.get_width() / 10), (screen.get_height() / 3 * 2), red, black, "USER ALREADY HAS THE FOLLOWING\n TECH CHECKED OUT:\t{}".format(currentTech))
 
         return 1
 
@@ -151,8 +154,7 @@ if __name__ == '__main__':
                     a.retrievedData['status'] *= -1
                     newStatus = int(a.retrievedData['status'])
                     name = a.retrievedData['name']
-                    a.greet(newStatus, name, surf)
-                    a.add(a.retrievedData)
+                    a.add(a.retrievedData, surf)
 
                 # else if the user exists but there was a command issued
                 elif exists and len(userInput) > 1:
