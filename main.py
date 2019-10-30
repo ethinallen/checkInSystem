@@ -83,7 +83,7 @@ class attendant():
         return data
 
     # verifies if the user has checked out tech or not; raises flag if tech is checked out
-    def checkTech(self):
+    def checkTech(self, screen):
 
         # pulls the currentTech field from the retrieved data for user
         currentTech = self.retrievedData['tech']
@@ -99,8 +99,8 @@ class attendant():
 
         return 1
 
-    def interpretCommands(self, command):
-        returnedValue = self.listOfCommands[command]()
+    def interpretCommands(self, command, screen):
+        returnedValue = self.listOfCommands[command](screen)
         return returnedValue
 
     # welcome the user back / see them later
@@ -158,7 +158,7 @@ if __name__ == '__main__':
                 elif exists and len(userInput) > 1:
 
                     command = userInput[0]
-                    a.interpretCommands(command)
+                    a.interpretCommands(command, surf)
 
                 # prompt user to enter name if not already in the system
                 else:
