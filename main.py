@@ -50,7 +50,6 @@ class attendant():
         a.greet(item['status'], item['name'], surf)
 
     # change the name of the user
-    # accepts screen argument because that is
     def changeName(self, screen):
         # prompt the attendant to enter the revised name
         a.retrievedData['name'] = input('NEW USER NAME:\t')
