@@ -41,7 +41,8 @@ class attendant():
         self.listOfCommands =   {
                                 'to' : self.techOut,
                                 'c' : self.changeName,
-                                'ti' : self.techIn
+                                'ti' : self.techIn,
+                                's' : self.status
                                 }
 
     # make the browser add data to the db
@@ -131,6 +132,23 @@ class attendant():
                         print(count, i)
 
 
+        return 1
+
+    # prints status of all participant in the database
+    def status(self, screen):
+        response = self.data.scan()
+        nameList = []
+        statusList = []
+        # store data in lists
+        for i in response['Items']:
+            nameList.append(i['name'])
+            statusList.append(i['status'])
+        # print out the result
+        for i in range(len(nameList)):
+            if statusList[i] == 1:
+                print("{:<50}".format(nameList[i] + "'s current status:") + "IN")
+            else:
+                print("{:<50}".format(nameList[i] + "'s current status:") + "OUT")
         return 1
 
     def interpretCommands(self, command, screen):
