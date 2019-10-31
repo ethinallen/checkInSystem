@@ -31,8 +31,7 @@ class attendant():
 
     def __init__(self):
         # connect to dynamodb
-        self.ddb = boto3.resource('dynamodb', region_name='us-east-1',
-                          endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
+        self.ddb = boto3.resource('dynamodb', region_name='us-east-2')
         self.data = self.loadTable()
 
         # the length of what a valid uid will be
@@ -40,8 +39,9 @@ class attendant():
 
         # the list of commands the attendant can be issued
         self.listOfCommands =   {
-                                't' : self.checkTech,
-                                'c' : self.changeName
+                                'to' : self.techOut,
+                                'c' : self.changeName,
+                                'ti' : self.techIn
                                 }
 
     # make the browser add data to the db
@@ -85,20 +85,52 @@ class attendant():
         return data
 
     # verifies if the user has checked out tech or not; raises flag if tech is checked out
-    def checkTech(self, screen):
+    def techOut(self, screen):
+
+        # pulls the currentTech field from the retrieved data for user
+        currentTech = self.retrievedData['tech']
+        # print out what the user checked out
+        if len(currentTech) == 0:
+            print("USER HAS NOTHING CHECKED OUT")
+        else:
+            print("CURRENTLY USER HAS THE FOLLOWING TECH CHECKED OUT:")
+            for count, i in enumerate(currentTech):
+                print(count, i)
+
+        # ask the user to enter what tech is being checked out
+        tech = input("ENTER TECH TO BE CHECKED OUT:\t\t")
+        self.retrievedData['tech'].append(tech)
+        self.add(self.retrievedData)
+
+        return 1
+
+    # return tech, user have to input what tech
+    def techIn(self, screen):
 
         # pulls the currentTech field from the retrieved data for user
         currentTech = self.retrievedData['tech']
 
-        # if the user does not have tech checked out
-        if currentTech == None:
-            tech = input("ENTER TECH TO BE CHECKED OUT:\t\t")
-            self.retrievedData['tech'] = tech
-            self.add(self.retrievedData)
-
+        # print out what the user checked out, stops if there is nothing to return
+        if len(currentTech) == 0:
+            print("USER HAS NOTHING TO RETURN")
         else:
-            display_box(surf, (screen.get_width() / 10), (screen.get_height() / 3 * 2), red, black, "USER ALREADY HAS THE FOLLOWING\n TECH CHECKED OUT:\t{}".format(currentTech))
+            print("CURRENTLY USER HAS THE FOLLOWING TECH CHECKED OUT:")
+            for count, i in enumerate(currentTech):
+                print(count, i)
 
+                # ask what is returned and update
+                returnTech = int(input("ENTER THE NUMBER OF THE TECH BEING RETURNED:\t\t"))
+                del currentTech[returnTech]
+                self.retrievedData['tech'] = currentTech
+                self.add(self.retrievedData)
+
+                # print out items that still need to be returned
+                if len(currentTech) == 0:
+                    print("USER RETURNED EVERYTHING")
+                else:
+                    print("USER STILL HAS THE FOLLOWING TECH CHECKED OUT:")
+                    for count, i in enumerate(currentTech):
+                        print(count, i)
         return 1
 
     def interpretCommands(self, command, screen):
@@ -126,11 +158,10 @@ if __name__ == '__main__':
 
     # make an attendant instance
     a = attendant()
-
     # continuously check for checkins / outs
     while True:
 
-        display_box(surf, (surf.get_width() / 20), (surf.get_height() / 3 * 2), black, white, "Welcome to helloWorld!")
+        display_box(surf, (surf.get_width() / 20), (surf.get_height() / 3 * 2), black, white, "\nWelcome to helloWorld!")
 
         try:
             userInput = input("USER ID:\t\t").split( )
@@ -138,6 +169,7 @@ if __name__ == '__main__':
             a.loadTable()
 
             uid = userInput[-1]
+            tech = []
 
             # if the uid is valid length
             if a.verifyUID(uid, surf):
@@ -164,7 +196,7 @@ if __name__ == '__main__':
                 # prompt user to enter name if not already in the system
                 else:
                     userName = input("USER NAME:\t\t")
-                    newUser = {'participantID' : uid, 'name' : userName, 'status' : 1, 'tech' : None}
+                    newUser = {'participantID' : uid, 'name' : userName, 'status' : 1, 'tech' : tech}
                     a.add(newUser)
                     print(userName.split(' ')[0])
                     display_box(surf, (surf.get_width() / 10), (surf.get_height() / 3 * 2), green, black, "Welcome, {}!".format(userName.split(' ')[0]))
