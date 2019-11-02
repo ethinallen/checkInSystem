@@ -179,7 +179,7 @@ if __name__ == '__main__':
     # continuously check for checkins / outs
     while True:
 
-        display_box(surf, (surf.get_width() / 20), (surf.get_height() / 3 * 2), black, white, "\nWelcome to helloWorld!")
+        display_box(surf, (surf.get_width() / 20), (surf.get_height() / 3 * 2), black, white, "Welcome to helloWorld!")
 
         try:
             userInput = input("USER ID:\t\t").split( )
