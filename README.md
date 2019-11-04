@@ -19,3 +19,5 @@ creating a check in system for CUhackitEvents
 ## Issues
 - [x] Sometimes the last id number is omitted upon scanning
   - Verify the length of the uid string before converting to int
+- [ ] Fix the add function for terminal version
+  - The older version of add should work 

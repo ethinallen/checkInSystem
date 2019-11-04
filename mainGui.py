@@ -131,18 +131,24 @@ class GUI():
         Label(self.master, image=self.background, bg="white").grid(row=0, columnspan=3)
         Label(self.master, bg="white").grid(rowspan=4, column=0)
         Label(self.master, bg="white").grid(rowspan=4, column=2)
-        Label(self.master, text="Check In System", bg="white", font="Ariel 30 bold").grid(row=1, column=1)
 
         # Label
+        self.labelTitle = Label(self.master, text="Check In System", bg="white", font="Ariel 30 bold")
         self.labelID = Label(self.master, text="Enter ID", font="Ariel 20 bold", bg="white")
         self.labelName = Label(self.master, text="Enter Name", font="Ariel 20 bold", bg="white")
+        self.labelTechOut = Label(self.master, text="Enter Tech to be Checked Out", font="Ariel 20 bold", bg="white")
+        self.labelTechIn = Label(self.master, text="Enter the Number of the Tech", font="Ariel 20 bold", bg="white")
+        self.labelTechList = Label(self.master, font="Ariel 20 bold", bg="white", anchor='w')
 
         # buttons for attendance, tech check, status check
-        self.buttonAttend = Button(self.master, text="Check In", width=20, height=3, command=lambda: self.checkInMenu())
+        self.buttonAttend = Button(self.master, text="Check In", width=20, height=3,
+                                   command=lambda: self.checkInMenu())
         self.buttonCName = Button(self.master, text="Chang Name", width=20, height=3,
                                   command=lambda: self.changeNameMenu())
-        self.buttonTO = Button(self.master, text="Check Out Tech", width=20, height=3)
-        self.buttonTI = Button(self.master, text="Return Tech", width=20, height=3)
+        self.buttonTO = Button(self.master, text="Check Out Tech", width=20, height=3,
+                               command=lambda: self.techOutMenu())
+        self.buttonTI = Button(self.master, text="Return Tech", width=20, height=3,
+                               command=lambda: self.techInMenu())
         self.buttonStatus = Button(self.master, text="Show Status", width=20, height=3)
         self.buttonMainMenu = Button(self.master, text="Back", width=20, height=3, command=lambda: self.mainMenu())
         self.buttonEnter = Button(self.master, text="Enter", width=20, height=3)
@@ -163,6 +169,7 @@ class GUI():
         self.master.grid_rowconfigure(6, weight=1)
 
         # default grid setup
+        self.labelTitle.grid(row=1, column=1)
         self.buttonAttend.grid(row=2, column=1)
         self.buttonCName.grid(row=3,column=1)
         self.buttonTO.grid(row=4, column=1)
@@ -170,6 +177,8 @@ class GUI():
         self.buttonStatus.grid(row=6, column=1)
 
     def mainMenu(self):
+        # change menu title
+        self.labelTitle.configure(text="Check In System")
         # add main menu buttons
         self.buttonAttend.grid(row=2, column=1)
         self.buttonCName.grid(row=3, column=1)
@@ -183,8 +192,12 @@ class GUI():
         self.buttonEnter.grid_forget()
         # set keys
         self.master.unbind('<Return>')
+        # clear input if there was input in the entry when button pressed
+        self.entryInput.delete(0, 'end')
 
     def checkInMenu(self):
+        # change menu title
+        self.labelTitle.configure(text="Check In and Check Out")
         # get rid of main menu widgets
         self.buttonAttend.grid_forget()
         self.buttonCName.grid_forget()
@@ -203,6 +216,8 @@ class GUI():
         self.master.bind('<Return>', self.checkIn)
 
     def changeNameMenu(self):
+        # change menu title
+        self.labelTitle.configure(text="Change Name")
         # get rid of main menu widgets
         self.buttonAttend.grid_forget()
         self.buttonCName.grid_forget()
@@ -220,6 +235,40 @@ class GUI():
         self.buttonEnter.configure(command=lambda: self.changeName())
         self.master.bind('<Return>', self.changeName)
 
+    def techOutMenu(self):
+        # change menu title
+        self.labelTitle.configure(text="Check Out Tech")
+        # get rid of main menu widgets
+        self.buttonAttend.grid_forget()
+        self.buttonCName.grid_forget()
+        self.buttonTO.grid_forget()
+        self.buttonTI.grid_forget()
+        self.buttonStatus.grid_forget()
+        # add checkInMenu widgets
+        self.buttonMainMenu.grid(row=5, column=0)
+        self.buttonEnter.grid(row=3, column=2)
+        self.entryInput.grid(row=3, column=1)
+        self.labelID.grid(row=2, column=1)
+        self.buttonEnter.configure(command=lambda: self.techOut())
+        self.master.bind('<Return>', self.techOut)
+
+    def techInMenu(self):
+        # change menu title
+        self.labelTitle.configure(text="Return Tech")
+        # get rid of main menu widgets
+        self.buttonAttend.grid_forget()
+        self.buttonCName.grid_forget()
+        self.buttonTO.grid_forget()
+        self.buttonTI.grid_forget()
+        self.buttonStatus.grid_forget()
+        # add checkInMenu widgets
+        self.buttonMainMenu.grid(row=5, column=0)
+        self.buttonEnter.grid(row=3, column=2)
+        self.entryInput.grid(row=3, column=1)
+        self.labelID.grid(row=2, column=1)
+        self.buttonEnter.configure(command=lambda: self.techIn())
+        self.master.bind('<Return>', self.techIn)
+
     # main function for adding new user, checking in and out old users
     def checkIn(self, event):
         if a.verifyUID(self.entryInput.get()):
@@ -232,6 +281,7 @@ class GUI():
                 # setting the input entry to take name
                 self.master.bind('<Return>', self.addNewUser)
                 self.entryInput.delete(0, 'end')
+                self.buttonMainMenu.configure(state="disabled")
                 self.labelID.grid_forget()
                 self.labelName.grid(row=2, column=1)
         else:
@@ -246,8 +296,55 @@ class GUI():
             if a.checkExists(self.uid):
                 self.master.bind('<Return>', self.changeNameHelper)
                 self.entryInput.delete(0, 'end')
+                self.buttonMainMenu.configure(state="disabled")
                 self.labelID.grid_forget()
                 self.labelName.grid(row=2, column=1)
+            else:
+                self.popUp("Error: User does not exist")
+        else:
+            self.popUp("Error: Invalid ID")
+
+        self.entryInput.delete(0, 'end')
+
+    # main function for checking out tech
+    def techOut(self, event):
+        if a.verifyUID(self.entryInput.get()):
+            self.uid = int(self.entryInput.get())
+            if a.checkExists(self.uid):
+                self.master.bind('<Return>', self.techOutHelper)
+                self.entryInput.delete(0, 'end')
+                self.buttonMainMenu.configure(state="disabled")
+                self.labelID.grid_forget()
+                self.labelTechOut.grid(row=2, column=1)
+            else:
+                self.popUp("Error: User does not exist")
+        else:
+            self.popUp("Error: Invalid ID")
+
+        self.entryInput.delete(0, 'end')
+
+    # main function for returning tech
+    def techIn(self, event):
+        if a.verifyUID(self.entryInput.get()):
+            self.uid = int(self.entryInput.get())
+            if a.checkExists(self.uid):
+                # formatting window with a list of tech already checked out
+                count = 0
+                techList = "Tech Already Checked Out: \n"
+                currentTech = a.retrievedData['tech']
+                for i in currentTech:
+                    techList += "{msg: <15}".format(msg=str(count) + ". " + i)
+                    print(techList)
+                    count += 1
+                self.master.bind('<Return>', self.techInHelper)
+                self.entryInput.delete(0, 'end')
+                self.buttonMainMenu.configure(state="disabled")
+                self.labelTechList.configure(text=techList)
+                self.labelID.grid_forget()
+                self.labelTechList.grid(row=2, column=1)
+                self.labelTechIn.grid(row=3, column=1)
+                self.entryInput.grid(row=4, column=1)
+                self.buttonEnter.grid(row=4, column=2)
             else:
                 self.popUp("Error: User does not exist")
         else:
@@ -263,21 +360,52 @@ class GUI():
         newUser = {'participantID': self.uid, 'name': username, 'status': 1, 'tech': tech}
         a.add(newUser)
         # format the window
-        self.master.bind('<Return>', self.checkIn())
+        self.master.bind('<Return>', self.checkIn)
+        self.buttonMainMenu.configure(state="normal")
         self.labelName.grid_forget()
         self.labelID.grid(row=2, column=1)
         self.entryInput.delete(0, 'end')
         self.greet(newUser, True)
 
-    #helper function for change name
+    # helper function for change name
     def changeNameHelper(self, event):
         username = self.entryInput.get()
         a.retrievedData['name'] = username
         a.add(a.retrievedData)
         # format the window
+        self.buttonMainMenu.configure(state="normal")
+        self.labelName.grid_forget()
         self.entryInput.delete(0, 'end')
         self.mainMenu()
         self.popUp("User name changed to " + username)
+
+    # helper function for tech out
+    def techOutHelper(self, event):
+        tech = self.entryInput.get()
+        a.retrievedData['tech'].append(tech)
+        a.add(a.retrievedData)
+        # format the window
+        self.buttonMainMenu.configure(state="normal")
+        self.labelTechOut.grid_forget()
+        self.entryInput.delete(0, 'end')
+        self.mainMenu()
+        self.popUp(tech + " checked out")
+
+    def techInHelper(self, event):
+        # remove the tech from the list
+        currentTech = a.retrievedData['tech']
+        techNum = int(self.entryInput.get())
+        tech = currentTech[techNum]
+        del currentTech[techNum]
+        a.retrievedData['tech'] = currentTech
+        a.add(a.retrievedData)
+        # format window
+        self.buttonMainMenu.configure(state="normal")
+        self.labelTechIn.grid_forget()
+        self.labelTechList.grid_forget()
+        self.entryInput.delete(0, 'end')
+        self.mainMenu()
+        self.popUp(tech + " returned")
 
     # greets when user check in and out, newUser is either true or false
     def greet(self, data, newUser):
@@ -313,7 +441,7 @@ class GUI():
         # show the pop up window
         win.deiconify()
         # the time until pop up window disappear, in ms
-        win.after(1000 * 1, win.withdraw)
+        win.after(1000 * 2, win.withdraw)
 
 if __name__ == '__main__':
     a = attendant()
