@@ -14,10 +14,11 @@ creating a check in system for CUhackitEvents
   - [x] add feature to select `remove tech`
     - Insert `ti` before ID to return tech 
 - [ ] Identify additional participant information that we want to track
-- [ ] Implement a GUI version (Optional)
+- [x] Implement a GUI version (Optional)
 
 ## Issues
 - [x] Sometimes the last id number is omitted upon scanning
   - Verify the length of the uid string before converting to int
 - [ ] Fix the add function for terminal version
   - The older version of add should work 
+- [ ] Simplify code in GUI version (Optional)

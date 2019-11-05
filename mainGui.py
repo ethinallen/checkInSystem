@@ -5,6 +5,7 @@ import pygame, pygame.font, pygame.event, pygame.draw
 from pygame.locals import *
 import time
 
+
 class attendant():
 
     def __init__(self):
@@ -16,15 +17,13 @@ class attendant():
         self.validLength = 10
 
         # the list of commands the attendant can be issued
-        self.listOfCommands =   {
-                                'to' : self.techOut,
-                                'ti' : self.techIn,
-                                's' : self.status
-                                }
+        self.listOfCommands = {
+            's': self.status
+        }
 
     # make the browser add data to the db
     def add(self, item):
-        self.data.put_item(Item = item)
+        self.data.put_item(Item=item)
 
     # queries ddb to see if the userID exists
     def checkExists(self, uid):
@@ -47,52 +46,6 @@ class attendant():
     def loadTable(self):
         data = self.ddb.Table('practiceAttendance')
         return data
-
-    # verifies if the user has checked out tech or not; raises flag if tech is checked out
-    def techOut(self):
-
-        # pulls the currentTech field from the retrieved data for user
-        currentTech = self.retrievedData['tech']
-        # print out what the user checked out
-        if len(currentTech) == 0:
-            print("USER HAS NOTHING CHECKED OUT")
-        else:
-            print("CURRENTLY USER HAS THE FOLLOWING TECH CHECKED OUT:")
-            for count, i in enumerate(currentTech):
-                print(count, i)
-
-        # ask the user to enter what tech is being checked out
-        tech = input("ENTER TECH TO BE CHECKED OUT:\t\t")
-        self.retrievedData['tech'].append(tech)
-        self.add(self.retrievedData)
-
-    # return tech, user have to input what tech
-    def techIn(self):
-
-        # pulls the currentTech field from the retrieved data for user
-        currentTech = self.retrievedData['tech']
-
-        # print out what the user checked out, stops if there is nothing to return
-        if len(currentTech) == 0:
-            print("USER HAS NOTHING TO RETURN")
-        else:
-            print("CURRENTLY USER HAS THE FOLLOWING TECH CHECKED OUT:")
-            for count, i in enumerate(currentTech):
-                print(count, i)
-
-                # ask what is returned and update
-                returnTech = int(input("ENTER THE NUMBER OF THE TECH BEING RETURNED:\t\t"))
-                del currentTech[returnTech]
-                self.retrievedData['tech'] = currentTech
-                self.add(self.retrievedData)
-
-                # print out items that still need to be returned
-                if len(currentTech) == 0:
-                    print("USER RETURNED EVERYTHING")
-                else:
-                    print("USER STILL HAS THE FOLLOWING TECH CHECKED OUT:")
-                    for count, i in enumerate(currentTech):
-                        print(count, i)
 
     # prints status of all participant in the database
     def status(self):
@@ -149,7 +102,8 @@ class GUI():
                                command=lambda: self.techOutMenu())
         self.buttonTI = Button(self.master, text="Return Tech", width=20, height=3,
                                command=lambda: self.techInMenu())
-        self.buttonStatus = Button(self.master, text="Show Status", width=20, height=3)
+        self.buttonStatus = Button(self.master, text="Show Status", width=20, height=3,
+                                   command=lambda: self.checkStatus())
         self.buttonMainMenu = Button(self.master, text="Back", width=20, height=3, command=lambda: self.mainMenu())
         self.buttonEnter = Button(self.master, text="Enter", width=20, height=3)
 
@@ -171,7 +125,7 @@ class GUI():
         # default grid setup
         self.labelTitle.grid(row=1, column=1)
         self.buttonAttend.grid(row=2, column=1)
-        self.buttonCName.grid(row=3,column=1)
+        self.buttonCName.grid(row=3, column=1)
         self.buttonTO.grid(row=4, column=1)
         self.buttonTI.grid(row=5, column=1)
         self.buttonStatus.grid(row=6, column=1)
@@ -352,6 +306,67 @@ class GUI():
 
         self.entryInput.delete(0, 'end')
 
+    # check status for all users in the database
+    # used pack to format because it's easier for this situation
+    # if you can, convert it to grid
+    def checkStatus(self):
+        # helper method for scroll bar
+        def yview(*args):
+            nameList.yview(*args)
+            statusList.yview(*args)
+
+        # helper method for scrolling outside the bar
+        def onMouseWheel(event):
+            # event 4 and 5 are for linux, not tested
+            # else is for windows, tested
+            if event.num == 4:
+                delta = int(-1*(event.delta/120))
+            elif event.num ==5:
+                delta = int((event.delta / 120))
+            else:
+                delta = int(-1*(event.delta/120))
+            nameList.yview("scroll", delta, "units")
+            statusList.yview("scroll", delta, "units")
+            # this prevents default bindings from firing, which
+            # would end up scrolling the widget twice
+            return "break"
+
+        # initialize everything
+        root = Toplevel()
+        root.geometry("300x300")
+        mainFrame = Frame(root)
+        topFrame = Frame(mainFrame)
+        bottomFrame = Frame(mainFrame)
+        scroll = Scrollbar(root, orient="vertical", command=yview)
+        labelName = Label(topFrame, text="Name", font="Ariel 10 bold")
+        labelStatus = Label(topFrame, text="Status", font="Ariel 10 bold")
+        nameList = Listbox(bottomFrame, yscrollcommand=scroll.set)
+        statusList = Listbox(bottomFrame, yscrollcommand=scroll.set)
+        # binding mouse wheel to scroll, button 4 and 5 is mouse wheel for linux
+        nameList.bind("<MouseWheel>", onMouseWheel)
+        statusList.bind("<MouseWheel>", onMouseWheel)
+        nameList.bind("<Button-4>", onMouseWheel)
+        statusList.bind("<Button-4>", onMouseWheel)
+        nameList.bind("<Button-5>", onMouseWheel)
+        statusList.bind("<Button-5>", onMouseWheel)
+        response = a.data.scan()
+        # format window
+        scroll.pack(side="right", fill="y")
+        mainFrame.pack(fill="both", expand=True)
+        topFrame.pack(side="top", fill="both", expand=True)
+        bottomFrame.pack(side="bottom", fill="both", expand=True)
+        labelName.pack(side="left", fill="x", expand=True)
+        labelStatus.pack(side="left", fill="x", expand=True)
+        nameList.pack(side="left", fill="both", expand=True)
+        statusList.pack(side="left", fill="both", expand=True)
+        # adding to the two lists
+        for i in response['Items']:
+            nameList.insert(END, i['name'])
+            if i['status'] == 1:
+                statusList.insert(END, "IN")
+            else:
+                statusList.insert(END, "OUT")
+
     # helper function for checkIn, adds new user to database
     def addNewUser(self, event):
         # adding user to database
@@ -428,7 +443,7 @@ class GUI():
         # show the pop up window
         win.deiconify()
         # the time until pop up window disappear, in ms
-        win.after(1000*2, win.withdraw)
+        win.after(1000 * 2, win.withdraw)
 
     # simple pop up window
     def popUp(self, text):
@@ -442,6 +457,7 @@ class GUI():
         win.deiconify()
         # the time until pop up window disappear, in ms
         win.after(1000 * 2, win.withdraw)
+
 
 if __name__ == '__main__':
     a = attendant()
