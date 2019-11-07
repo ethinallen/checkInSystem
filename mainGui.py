@@ -16,11 +16,6 @@ class attendant():
         # the length of what a valid uid will be
         self.validLength = 10
 
-        # the list of commands the attendant can be issued
-        self.listOfCommands = {
-            's': self.status
-        }
-
     # make the browser add data to the db
     def add(self, item):
         self.data.put_item(Item=item)
@@ -46,26 +41,6 @@ class attendant():
     def loadTable(self):
         data = self.ddb.Table('practiceAttendance')
         return data
-
-    # prints status of all participant in the database
-    def status(self):
-        response = self.data.scan()
-        nameList = []
-        statusList = []
-        # store data in lists
-        for i in response['Items']:
-            nameList.append(i['name'])
-            statusList.append(i['status'])
-        # print out the result
-        for i in range(len(nameList)):
-            if statusList[i] == 1:
-                print("{:<50}".format(nameList[i] + "'s current status:") + "IN")
-            else:
-                print("{:<50}".format(nameList[i] + "'s current status:") + "OUT")
-
-    def interpretCommands(self, command):
-        returnedValue = self.listOfCommands[command]()
-        return returnedValue
 
 
 # setting up gui
@@ -166,7 +141,7 @@ class GUI():
         # make sure keyboard focus on the entry
         self.entryInput.focus_set()
         # set keys
-        self.buttonEnter.configure(command=lambda: self.checkIn())
+        self.buttonEnter.configure(command=lambda: self.checkIn(event=None))
         self.master.bind('<Return>', self.checkIn)
 
     def changeNameMenu(self):
@@ -186,7 +161,7 @@ class GUI():
         # make sure keyboard focus on the entry
         self.entryInput.focus_set()
         # set keys
-        self.buttonEnter.configure(command=lambda: self.changeName())
+        self.buttonEnter.configure(command=lambda: self.changeName(event=None))
         self.master.bind('<Return>', self.changeName)
 
     def techOutMenu(self):
@@ -203,7 +178,7 @@ class GUI():
         self.buttonEnter.grid(row=3, column=2)
         self.entryInput.grid(row=3, column=1)
         self.labelID.grid(row=2, column=1)
-        self.buttonEnter.configure(command=lambda: self.techOut())
+        self.buttonEnter.configure(command=lambda: self.techOut(event=None))
         self.master.bind('<Return>', self.techOut)
 
     def techInMenu(self):
@@ -220,7 +195,7 @@ class GUI():
         self.buttonEnter.grid(row=3, column=2)
         self.entryInput.grid(row=3, column=1)
         self.labelID.grid(row=2, column=1)
-        self.buttonEnter.configure(command=lambda: self.techIn())
+        self.buttonEnter.configure(command=lambda: self.techIn(event=None))
         self.master.bind('<Return>', self.techIn)
 
     # main function for adding new user, checking in and out old users
@@ -233,6 +208,7 @@ class GUI():
                 self.greet(a.retrievedData, False)
             else:
                 # setting the input entry to take name
+                self.buttonEnter.configure(command=lambda: self.addNewUser(event=None))
                 self.master.bind('<Return>', self.addNewUser)
                 self.entryInput.delete(0, 'end')
                 self.buttonMainMenu.configure(state="disabled")
@@ -248,6 +224,7 @@ class GUI():
         if a.verifyUID(self.entryInput.get()):
             self.uid = int(self.entryInput.get())
             if a.checkExists(self.uid):
+                self.buttonEnter.configure(command=lambda: self.changeNameHelper(event=None))
                 self.master.bind('<Return>', self.changeNameHelper)
                 self.entryInput.delete(0, 'end')
                 self.buttonMainMenu.configure(state="disabled")
@@ -265,6 +242,7 @@ class GUI():
         if a.verifyUID(self.entryInput.get()):
             self.uid = int(self.entryInput.get())
             if a.checkExists(self.uid):
+                self.buttonEnter.configure(command=lambda: self.techOutHelper(event=None))
                 self.master.bind('<Return>', self.techOutHelper)
                 self.entryInput.delete(0, 'end')
                 self.buttonMainMenu.configure(state="disabled")
@@ -288,8 +266,8 @@ class GUI():
                 currentTech = a.retrievedData['tech']
                 for i in currentTech:
                     techList += "{msg: <15}".format(msg=str(count) + ". " + i)
-                    print(techList)
                     count += 1
+                self.buttonEnter.configure(command=lambda: self.techInHelper(event=None))
                 self.master.bind('<Return>', self.techInHelper)
                 self.entryInput.delete(0, 'end')
                 self.buttonMainMenu.configure(state="disabled")
@@ -375,6 +353,7 @@ class GUI():
         newUser = {'participantID': self.uid, 'name': username, 'status': 1, 'tech': tech}
         a.add(newUser)
         # format the window
+        self.buttonEnter.configure(command=lambda: self.checkIn(event=None))
         self.master.bind('<Return>', self.checkIn)
         self.buttonMainMenu.configure(state="normal")
         self.labelName.grid_forget()
