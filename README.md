@@ -21,4 +21,6 @@ creating a check in system for CUhackitEvents
   - Verify the length of the uid string before converting to int
 - [ ] Fix the add function for terminal version
   - The older version of add should work 
-- [ ] Simplify code in GUI version (Optional)
+- [ ] Format code in GUI version (Optional)
+  - Magic numbers, duplicate codes, and etc
+- [ ] Zoom not working for Linux

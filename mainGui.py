@@ -48,6 +48,7 @@ class GUI():
 
     def __init__(self, master):
         self.master = master
+        # doesnt work on linux, need fix
         self.master.state("zoomed")
         self.initUI()
 
