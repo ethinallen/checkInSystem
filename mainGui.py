@@ -51,7 +51,7 @@ class GUI():
     def __init__(self, master):
         self.master = master
         # doesnt work on linux, need fix
-        self.master.state("zoomed")
+        #self.master.state("zoomed")
         self.diet = IntVar()
         self.initUI()
 
@@ -366,7 +366,7 @@ class GUI():
         # adding user to database
         # a list containing tech, empty at first
         tech = []
-        # a list containing meal swipe, 1 for not used, 0 for used
+        # a list containing meal swipe, 1 for not used, -1 for used
         meal = [1, 1, 1, 1, 1]
         # a list containing workshop info, 1 for attended, 0 for not attend
         workshop = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -502,7 +502,7 @@ class GUI():
 
         win = Toplevel()
         win.configure(background="white")
-        win.state('zoomed')
+        #win.state('zoomed')
         # set up buttons
         buttonSatLunch = Button(win, text="Saturday Lunch", font="Ariel 30 bold", fg='black', bg='white',
                                 command=lambda: buttonHelper(1, buttonSatLunch))
@@ -561,7 +561,7 @@ class GUI():
 
         win = Toplevel()
         win.configure(background="white")
-        win.state('zoomed')
+        #win.state('zoomed')
         workshopList = ["Build an App with AWS", "Splunk Challenge Intro (11AM)", "Introduction to Git and Github",
                         "Introduction to Arduino", "Introduction to Python", "Data Science with Bioinformatics",
                         "Introduction to RESTful API", "Introduction to Web Development", "Machine Learning with AWS",
