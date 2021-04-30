@@ -1,9 +1,10 @@
-boto3==1.11.9
-botocore==1.14.9
+-i https://pypi.org/simple/
+boto3==1.9.250
+botocore==1.12.253
 docutils==0.15.2
-jmespath==0.9.4
+jmespath==0.10.0
 pygame==1.9.6
-python-dateutil==2.8.1
-s3transfer==0.3.2
-six==1.14.0
+python-dateutil==2.8.1 ; python_version >= '2.7'
+s3transfer==0.2.1
+six==1.15.0
 urllib3==1.25.8
